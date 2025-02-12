@@ -1,0 +1,48 @@
+def modelling(pipe):
+    pipe.fit(X_train,y_train)
+    #predict train data
+    y_hat_train = pipe.predict(X_train)
+    #predict test data
+    y_hat_test = pipe.predict(X_test)
+
+    #get accuracy score
+    base_train_accuracy = accuracy_score(y_train,y_hat_train)
+    base_test_accuracy = accuracy_score(y_test,y_hat_test)
+    base_train_precision = precision_score(y_train, y_hat_train,average='weighted')
+    base_test_precision = precision_score(y_test, y_hat_test,average='weighted')
+    base_train_recall = recall_score(y_train, y_hat_train,average='weighted')
+    base_test_recall = recall_score(y_test, y_hat_test,average='weighted')
+    base_train_f1 = f1_score(y_train, y_hat_train,average='weighted')
+    base_test_f1 = f1_score(y_test, y_hat_test,average='weighted')
+    
+     # Get prediction scores for ROC Curve
+    if hasattr(pipe, "decision_function"):
+        y_score_test = pipe.decision_function(X_test)  # SVM, Logistic Regression
+    else:
+        y_score_test = pipe.predict_proba(X_test)[:, 1]  # Other models
+    
+#     y_score_test = pipe.decision_function(X_test)
+    test_fpr,test_tpr,testthereshold = roc_curve(y_test,y_score_test)
+    test_auc = auc(test_fpr,test_tpr) 
+        # Plot ROC Curve
+    plt.figure(figsize=(8, 6))
+    sns.lineplot(x=test_fpr, y=test_tpr, label=f'AUC = {test_auc:.4f}')
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.title("ROC Curve")
+    plt.legend()
+    plt.show()
+
+
+    return {
+        'Training Accuracy': base_train_accuracy,
+        'Test Accuracy': base_test_accuracy,
+        'Training precision':base_train_precision,
+        'Test precision':base_test_precision,
+        'Training recall':base_train_recall,
+        'Test recall':base_test_recall,
+        'Training f1_score':base_train_f1,
+        'Test f1_score':base_test_f1,
+        'Test AUC':test_auc
+    }
+    
